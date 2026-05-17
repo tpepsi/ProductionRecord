@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Batch Record System</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>Batch Record System</h1>
+    <p>Production Traceability Form</p>
+  </div>
+
+  <!-- FORM -->
+
+  <div class="card">
+
+    <div class="form-grid">
+
+      <div>
+        <label>Invoice No</label>
+        <input type="text" id="invoice" placeholder="4567">
+      </div>
+
+      <div>
+        <label>Item</label>
+        <input type="text" id="item" placeholder="Apple">
+      </div>
+
+    </div>
+
+    <div class="batch-section">
+
+      <label>Batch Code</label>
+
+      <input
+        type="text"
+        id="batchInput"
+        placeholder="Example: Y010125--2"
+        onkeydown="handleBatch(event)"
+      >
+
+      <small>
+        Press ENTER after every batch code
+      </small>
+
+    </div>
+
+    <!-- COMBINED -->
+
+    <div class="preview-box">
+
+      <label>Combine Batch Code</label>
+
+      <textarea id="combinedCode" readonly></textarea>
+
+    </div>
+
+    <!-- TOTAL -->
+
+    <div class="summary-box">
+
+      <span>Total Quantity</span>
+
+      <h2 id="totalQty">0</h2>
+
+    </div>
+
+    <!-- BUTTON -->
+
+    <div class="button-group">
+
+      <button onclick="newInv()">
+        New Inv
+      </button>
+
+      <button onclick="saveRecord()">
+        Save Record
+      </button>
+
+      <button onclick="exportCSV()">
+        Export Excel
+      </button>
+
+    </div>
+
+    <p id="error"></p>
+
+  </div>
+
+  <!-- SEARCH -->
+
+  <div class="card">
+
+    <label>Search Record</label>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search Invoice / Item / Operator"
+      onkeyup="filterTable()"
+    >
+
+  </div>
+
+  <!-- OPERATOR SUMMARY -->
+
+  <div class="card">
+
+    <h2>Operator Summary</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Operator</th>
+          <th>Total Quantity</th>
+        </tr>
+      </thead>
+
+      <tbody id="summaryTable"></tbody>
+
+    </table>
+
+  </div>
+
+  <!-- TABLE -->
+
+  <div class="table-card">
+
+    <h2>Production Record</h2>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Inv No</th>
+            <th>Item</th>
+            <th>Operator</th>
+            <th>Date</th>
+            <th>Quantity</th>
+            <th>Combine INV&QTY</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="recordTable"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
