@@ -1,10 +1,9 @@
-let records = JSON.parse(localStorage.getItem("records")) || [];
+let records =
+  JSON.parse(localStorage.getItem("records")) || [];
 
 let batchCodes = [];
 
 renderTable(records);
-
-renderSummary();
 
 function handleBatch(event){
 
@@ -48,11 +47,14 @@ function handleBatch(event){
 
 function validateBatch(batch){
 
-  const normal = /^[A-Z]\d{6}--\d+$/;
+  const normal =
+    /^[A-Z]\d{6}--\d+$/;
 
-  const noOperator = /^NA\d{6}--\d+$/;
+  const noOperator =
+    /^NA\d{6}--\d+$/;
 
-  const noDate = /^[A-Z]NA--\d+$/;
+  const noDate =
+    /^[A-Z]NA--\d+$/;
 
   return (
     normal.test(batch) ||
@@ -206,8 +208,6 @@ function saveRecord(){
 
   renderTable(records);
 
-  renderSummary();
-
   newInv();
 
 }
@@ -237,12 +237,14 @@ function renderTable(data){
         <td>${record.combine}</td>
 
         <td>
+
           <button
             class="delete-btn"
             onclick="deleteRecord(${index})"
           >
             Delete
           </button>
+
         </td>
 
       </tr>
@@ -262,8 +264,6 @@ function deleteRecord(index){
   );
 
   renderTable(records);
-
-  renderSummary();
 
 }
 
@@ -293,41 +293,6 @@ function filterTable(){
 
 }
 
-function renderSummary(){
-
-  const summaryTable =
-    document.getElementById("summaryTable");
-
-  summaryTable.innerHTML = "";
-
-  const summary = {};
-
-  records.forEach(record => {
-
-    if(!summary[record.operator]){
-
-      summary[record.operator] = 0;
-
-    }
-
-    summary[record.operator] +=
-      Number(record.qty);
-
-  });
-
-  for(let operator in summary){
-
-    summaryTable.innerHTML += `
-      <tr>
-        <td>${operator}</td>
-        <td>${summary[operator]}</td>
-      </tr>
-    `;
-
-  }
-
-}
-
 function newInv(){
 
   document.getElementById("invoice").value = "";
@@ -346,35 +311,40 @@ function newInv(){
 
 }
 
-function exportCSV(){
+function exportExcel(){
 
-  let csv =
-`Inv No,Item,Operator,Date,Quantity,Combine INV&QTY\n`;
+  const excelData = records.map(record => ({
 
-  records.forEach(record => {
+    "Inv No": record.invoice,
 
-    csv +=
-`${record.invoice},
-${record.item},
-${record.operator},
-${record.date},
-${record.qty},
-${record.combine}\n`;
+    "Item": record.item,
 
-  });
+    "Operator": record.operator,
 
-  const blob =
-    new Blob([csv], {type:'text/csv'});
+    "Date": record.date,
 
-  const link =
-    document.createElement("a");
+    "Quantity": record.qty,
 
-  link.href =
-    URL.createObjectURL(blob);
+    "Combine INV&QTY": record.combine
 
-  link.download =
-    "production_record.csv";
+  }));
 
-  link.click();
+
+  const worksheet =
+    XLSX.utils.json_to_sheet(excelData);
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Production Record"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "production_record.xlsx"
+  );
 
 }

@@ -1,19 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Batch Record System</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Production Record System</title>
 
   <link rel="stylesheet" href="style.css">
+
+  <!-- XLSX LIBRARY -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
 </head>
+
 <body>
 
 <div class="container">
 
   <div class="header">
-    <h1>Batch Record System</h1>
-    <p>Production Traceability Form</p>
+
+    <h1>Production Record System</h1>
+
+    <p>Batch Traceability Form</p>
+
   </div>
 
   <!-- FORM -->
@@ -24,15 +33,27 @@
 
       <div>
         <label>Invoice No</label>
-        <input type="text" id="invoice" placeholder="4567">
+
+        <input
+          type="text"
+          id="invoice"
+          placeholder="4567"
+        >
       </div>
 
       <div>
         <label>Item</label>
-        <input type="text" id="item" placeholder="Apple">
+
+        <input
+          type="text"
+          id="item"
+          placeholder="Apple"
+        >
       </div>
 
     </div>
+
+    <!-- BATCH -->
 
     <div class="batch-section">
 
@@ -57,7 +78,10 @@
 
       <label>Combine Batch Code</label>
 
-      <textarea id="combinedCode" readonly></textarea>
+      <textarea
+        id="combinedCode"
+        readonly
+      ></textarea>
 
     </div>
 
@@ -71,7 +95,7 @@
 
     </div>
 
-    <!-- BUTTON -->
+    <!-- BUTTONS -->
 
     <div class="button-group">
 
@@ -83,7 +107,7 @@
         Save Record
       </button>
 
-      <button onclick="exportCSV()">
+      <button onclick="exportExcel()">
         Export Excel
       </button>
 
@@ -108,27 +132,6 @@
 
   </div>
 
-  <!-- OPERATOR SUMMARY -->
-
-  <div class="card">
-
-    <h2>Operator Summary</h2>
-
-    <table>
-
-      <thead>
-        <tr>
-          <th>Operator</th>
-          <th>Total Quantity</th>
-        </tr>
-      </thead>
-
-      <tbody id="summaryTable"></tbody>
-
-    </table>
-
-  </div>
-
   <!-- TABLE -->
 
   <div class="table-card">
@@ -140,15 +143,25 @@
       <table>
 
         <thead>
+
           <tr>
+
             <th>Inv No</th>
+
             <th>Item</th>
+
             <th>Operator</th>
+
             <th>Date</th>
+
             <th>Quantity</th>
+
             <th>Combine INV&QTY</th>
+
             <th>Action</th>
+
           </tr>
+
         </thead>
 
         <tbody id="recordTable"></tbody>
