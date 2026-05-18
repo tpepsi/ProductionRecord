@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Production Record System</title>
@@ -32,6 +34,7 @@
     <div class="form-grid">
 
       <div>
+
         <label>Invoice No</label>
 
         <input
@@ -39,16 +42,19 @@
           id="invoice"
           placeholder="4567"
         >
+
       </div>
 
       <div>
+
         <label>Item</label>
 
         <input
           type="text"
           id="item"
-          placeholder="Apple"
+          placeholder='(34") x 7 (L)'
         >
+
       </div>
 
     </div>
@@ -62,7 +68,7 @@
       <input
         type="text"
         id="batchInput"
-        placeholder="Example: Y010125--2"
+        placeholder="Example: MH010125--2"
         onkeydown="handleBatch(event)"
       >
 
@@ -107,7 +113,10 @@
         Save Record
       </button>
 
-      <button onclick="exportExcel()">
+      <button
+        class="export-btn"
+        onclick="exportExcel()"
+      >
         Export Excel
       </button>
 

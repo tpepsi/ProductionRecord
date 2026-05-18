@@ -104,6 +104,12 @@ button:hover{
   opacity:0.9;
 }
 
+/* EXPORT BUTTON RIGHT */
+
+.export-btn{
+  margin-left:auto;
+}
+
 .delete-btn{
   background:red;
   color:white;
@@ -146,6 +152,10 @@ th{
 
   .form-grid{
     grid-template-columns:1fr;
+  }
+
+  .export-btn{
+    margin-left:0;
   }
 
 }

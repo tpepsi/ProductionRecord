@@ -82,17 +82,24 @@ function calculateTotalQty(){
 
 }
 
+/* CLEAN EXCEL TEXT */
+
 function cleanItemText(text){
 
   return text
 
-    // remove alt+enter
-    .replace(/\n/g," ")
+    // remove line breaks
+    .replace(/\r?\n|\r/g," ")
 
-    // remove extra ""
+    // remove weird double quotes
     .replace(/""/g,'"')
 
-    // remove weird spacing
+    // smart quotes
+    .replace(/[“”]/g,'"')
+
+    .replace(/[‘’]/g,"'")
+
+    // remove extra spaces
     .replace(/\s+/g," ")
 
     .trim();
@@ -246,6 +253,7 @@ function renderTable(data){
   table.innerHTML = "";
 
   // NEWEST FIRST
+
   const reversed =
     [...data].reverse();
 
