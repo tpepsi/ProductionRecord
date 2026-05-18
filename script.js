@@ -48,13 +48,13 @@ function handleBatch(event){
 function validateBatch(batch){
 
   const normal =
-    /^[A-Z]\d{6}--\d+$/;
+    /^[A-Z]+\d{6}--\d+$/;
 
   const noOperator =
     /^NA\d{6}--\d+$/;
 
   const noDate =
-    /^[A-Z]NA--\d+$/;
+    /^[A-Z]+NA--\d+$/;
 
   return (
     normal.test(batch) ||
@@ -82,13 +82,36 @@ function calculateTotalQty(){
 
 }
 
+function cleanItemText(text){
+
+  return text
+
+    // remove alt+enter
+    .replace(/\n/g," ")
+
+    // remove extra ""
+    .replace(/""/g,'"')
+
+    // remove weird spacing
+    .replace(/\s+/g," ")
+
+    .trim();
+
+}
+
 function saveRecord(){
 
   const invoice =
-    document.getElementById("invoice").value.trim();
+    document.getElementById("invoice")
+    .value
+    .trim();
 
-  const item =
-    document.getElementById("item").value.trim();
+  let item =
+    document.getElementById("item")
+    .value
+    .trim();
+
+  item = cleanItemText(item);
 
   const error =
     document.getElementById("error");
@@ -128,15 +151,18 @@ function saveRecord(){
     const firstPart =
       split[0];
 
-    // Y010125
+    // MH010125
 
-    if(/^[A-Z]\d{6}$/.test(firstPart)){
+    if(/^[A-Z]+\d{6}$/.test(firstPart)){
+
+      const match =
+        firstPart.match(/^([A-Z]+)(\d{6})$/);
 
       operator =
-        firstPart.charAt(0);
+        match[1];
 
       const rawDate =
-        firstPart.substring(1);
+        match[2];
 
       const day =
         rawDate.substring(0,2);
@@ -175,12 +201,12 @@ function saveRecord(){
 
     }
 
-    // YNA
+    // MHNA
 
-    else if(/^[A-Z]NA$/.test(firstPart)){
+    else if(/^[A-Z]+NA$/.test(firstPart)){
 
       operator =
-        firstPart.charAt(0);
+        firstPart.replace("NA","");
 
       date = "NA";
 
@@ -219,7 +245,11 @@ function renderTable(data){
 
   table.innerHTML = "";
 
-  data.forEach((record,index) => {
+  // NEWEST FIRST
+  const reversed =
+    [...data].reverse();
+
+  reversed.forEach((record,index) => {
 
     table.innerHTML += `
       <tr>
@@ -240,7 +270,7 @@ function renderTable(data){
 
           <button
             class="delete-btn"
-            onclick="deleteRecord(${index})"
+            onclick="deleteRecord(${data.length - 1 - index})"
           >
             Delete
           </button>
@@ -328,7 +358,6 @@ function exportExcel(){
     "Combine INV&QTY": record.combine
 
   }));
-
 
   const worksheet =
     XLSX.utils.json_to_sheet(excelData);
