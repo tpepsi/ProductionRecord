@@ -1,6 +1,6 @@
-function getDisplayFields(record){
+function getDisplayFields(record) {
 
-  if(record.rawCode){
+  if (record.rawCode) {
 
     const parsed =
       parseBatchCode(record.rawCode);
@@ -20,11 +20,11 @@ function getDisplayFields(record){
   const parsed =
     parseBatchCode(record.batch || "");
 
-  if(
+  if (
     parsed.operator !== "INVALID"
     || parsed.mfgDate !== "INVALID"
     || parsed.quantity !== "INVALID"
-  ){
+  ) {
 
     return {
 
@@ -50,7 +50,7 @@ function getDisplayFields(record){
 
 }
 
-function getRecordsTableHeadHTML(){
+function getRecordsTableHeadHTML() {
 
   return `
 
@@ -80,7 +80,7 @@ function getRecordsTableHeadHTML(){
 
 }
 
-function buildRecordRowHTML(record, options){
+function buildRecordRowHTML(record, options) {
 
   const display = getDisplayFields(record);
 
@@ -123,7 +123,7 @@ function buildRecordRowHTML(record, options){
 
 }
 
-function filterRecords(records, filters){
+function filterRecords(records, filters) {
 
   const invoice =
     (filters.invoice || "").toLowerCase().trim();
@@ -141,25 +141,25 @@ function filterRecords(records, filters){
 
     const display = getDisplayFields(record);
 
-    if(invoice && !record.invoice.toLowerCase().includes(invoice)){
+    if (invoice && !record.invoice.toLowerCase().includes(invoice)) {
 
       return false;
 
     }
 
-    if(item && !record.item.toLowerCase().includes(item)){
+    if (item && !record.item.toLowerCase().includes(item)) {
 
       return false;
 
     }
 
-    if(operator && !display.operator.toLowerCase().includes(operator)){
+    if (operator && !display.operator.toLowerCase().includes(operator)) {
 
       return false;
 
     }
 
-    if(keyword){
+    if (keyword) {
 
       const haystack = [
 
@@ -175,7 +175,7 @@ function filterRecords(records, filters){
 
       ].join(" ").toLowerCase();
 
-      if(!haystack.includes(keyword)){
+      if (!haystack.includes(keyword)) {
 
         return false;
 
@@ -189,11 +189,11 @@ function filterRecords(records, filters){
 
 }
 
-function renderRecordsTableBody(tbodyId, data, options){
+function renderRecordsTableBody(tbodyId, data, options) {
 
   const body = document.getElementById(tbodyId);
 
-  if(!body) return;
+  if (!body) return;
 
   body.innerHTML = "";
 
@@ -211,16 +211,16 @@ function renderRecordsTableBody(tbodyId, data, options){
 
 }
 
-function createRecordFromBatch(invoice, deliveryDate, item, code){
+function createRecordFromBatch(invoice, deliveryDate, item, code) {
 
   const parsed = parseBatchCode(code);
 
   return {
 
+    id: crypto.randomUUID(),
+
     invoice,
-
     deliveryDate,
-
     item,
 
     operator: parsed.operator,

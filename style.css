@@ -952,3 +952,45 @@ button:hover{
   }
 
 }
+
+.planning-layout{
+
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:24px;
+  align-items:start;
+
+}
+
+.planning-grid-wrap{
+
+  overflow:auto;
+
+}
+
+.planning-matrix{
+
+  width:100%;
+  border-collapse:collapse;
+
+}
+
+.planning-matrix td{
+
+  border:1px solid #999;
+  padding:14px;
+  min-width:120px;
+  text-align:center;
+  font-size:17px;
+
+}
+
+@media (max-width:1000px){
+
+  .planning-layout{
+
+    grid-template-columns:1fr;
+
+  }
+
+}

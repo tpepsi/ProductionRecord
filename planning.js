@@ -1,74 +1,198 @@
-function goBack(){
-  window.location.href = "records.html";
+function getAllRecords(){
+
+  return JSON.parse(
+    localStorage.getItem("records")
+  ) || [];
+
 }
 
-const records = JSON.parse(localStorage.getItem("productionRecords")) || [];
+function renderPlanningPage(){
 
-const tbody = document.querySelector("#recordTable tbody");
+  const invoiceFilter =
+    document.getElementById("filterInvoice")
+    ?.value
+    .trim()
+    .toLowerCase() || "";
 
-records.forEach(record => {
+  const itemFilter =
+    document.getElementById("filterItem")
+    ?.value
+    .trim()
+    .toLowerCase() || "";
 
-  const tr = document.createElement("tr");
+  const operatorFilter =
+    document.getElementById("filterOperator")
+    ?.value
+    .trim()
+    .toLowerCase() || "";
 
-  tr.innerHTML = `
-    <td>${record.invoice}</td>
-    <td>${record.item}</td>
-    <td>${record.operator}</td>
-    <td>${record.date}</td>
-    <td>${record.quantity}</td>
-    <td>${record.combine}</td>
-  `;
+  const dateFilter =
+    document.getElementById("filterDate")
+    ?.value
+    .trim()
+    .toLowerCase() || "";
 
-  tbody.appendChild(tr);
-});
+  let records = getAllRecords();
 
-function generatePlanning(){
+  records = records.filter(record => {
 
-  const planningTable = document.querySelector("#planningTable tbody");
+    const invoice =
+      (record.invoice || "")
+      .toLowerCase();
 
-  planningTable.innerHTML = "";
+    const item =
+      (record.item || "")
+      .toLowerCase();
 
-  const combineData = records.map(r => r.combine);
+    const operator =
+      (record.operator || "")
+      .toLowerCase();
 
-  for(let i = 0; i < combineData.length; i += 5){
+    const date =
+      (record.date || "")
+      .toLowerCase();
 
-    const row = combineData.slice(i, i + 5);
+    return (
 
-    const tr = document.createElement("tr");
+      invoice.includes(invoiceFilter)
 
-    row.forEach(data => {
+      &&
 
-      const td = document.createElement("td");
+      item.includes(itemFilter)
 
-      td.textContent = data;
+      &&
 
-      tr.appendChild(td);
+      operator.includes(operatorFilter)
+
+      &&
+
+      date.includes(dateFilter)
+
+    );
+
+  });
+
+  renderLeftTable(records);
+
+  renderPlanningMatrix(records);
+
+}
+
+function renderLeftTable(records){
+
+  const body =
+    document.getElementById(
+      "planningRecordBody"
+    );
+
+  body.innerHTML = "";
+
+  records.forEach(record => {
+
+    body.innerHTML += `
+
+      <tr>
+
+        <td>${record.invoice || ""}</td>
+
+        <td>${record.item || ""}</td>
+
+        <td>${record.operator || ""}</td>
+
+        <td>${record.date || ""}</td>
+
+        <td>${record.qty || ""}</td>
+
+        <td>${record.combine || ""}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+function renderPlanningMatrix(records){
+
+  const matrix =
+    document.getElementById(
+      "planningMatrix"
+    );
+
+  matrix.innerHTML = "";
+
+  const combineList =
+    records.map(record => {
+
+      const qty =
+        record.qty || "";
+
+      const invoice =
+        record.invoice || "";
+
+      return `${qty}--${invoice}`;
+
     });
 
-    planningTable.appendChild(tr);
+  const perRow = 5;
+
+  for(let i = 0; i < combineList.length; i += perRow){
+
+    const row =
+      document.createElement("tr");
+
+    combineList
+      .slice(i, i + perRow)
+      .forEach(value => {
+
+        const td =
+          document.createElement("td");
+
+        td.textContent = value;
+
+        row.appendChild(td);
+
+      });
+
+    matrix.appendChild(row);
+
   }
+
 }
 
-function copyPlanning(){
+function copyPlanningTable(){
 
-  const rows = document.querySelectorAll("#planningTable tr");
+  const rows =
+    document.querySelectorAll(
+      "#planningMatrix tr"
+    );
 
   let output = "";
 
   rows.forEach(row => {
 
-    const cols = row.querySelectorAll("td");
+    const cells =
+      row.querySelectorAll("td");
 
-    let rowData = [];
+    const rowText =
+      [...cells]
+      .map(td => td.innerText)
+      .join("\t");
 
-    cols.forEach(col => {
-      rowData.push(col.textContent);
-    });
+    output += rowText + "\n";
 
-    output += rowData.join("\t") + "\n";
   });
 
   navigator.clipboard.writeText(output);
 
-  alert("Planning data copied for Excel!");
+  alert(
+    "Planning copied.\nPaste directly into Excel."
+  );
+
 }
+
+document.addEventListener(
+  "DOMContentLoaded",
+  renderPlanningPage
+);
