@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Planning Page</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+  <div class="container records-page">
+
+    <div class="records-toolbar">
+
+      <div class="records-toolbar-left">
+
+        <button onclick="window.location.href='records.html'">
+          Back
+        </button>
+
+      </div>
+
+      <div class="records-toolbar-center planning-filters">
+
+        <input type="text" id="filterInvoice" class="records-search" placeholder="Invoice"
+          oninput="renderPlanningPage()">
+
+        <input type="text" id="filterItem" class="records-search" placeholder="Item" oninput="renderPlanningPage()">
+
+        <input type="text" id="filterOperator" class="records-search" placeholder="Operator"
+          oninput="renderPlanningPage()">
+
+        <input type="text" id="filterDate" class="records-search" placeholder="Date" oninput="renderPlanningPage()">
+
+      </div>
+
+      <div class="records-toolbar-right">
+
+        <button onclick="copyPlanningTable()">
+          Copy Planning
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="planning-layout">
+
+      <!-- LEFT -->
+
+      <div class="planning-left">
+
+        <h2>Production Record</h2>
+
+        <div class="table-scroll-wrap">
+
+          <table class="app-table records-table">
+
+            <thead>
+
+              <tr>
+
+                <th>Invoice</th>
+                <th>Item</th>
+                <th>Operator</th>
+                <th>Date</th>
+                <th>Qty</th>
+                <th>Combine</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody id="planningRecordBody"></tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+
+      <div class="planning-right">
+
+        <h2>Planning Matrix</h2>
+
+        <div class="planning-grid-wrap">
+
+          <table id="planningMatrix" class="planning-matrix"></table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="planning.js"></script>
+
+</body>
+
+</html>
