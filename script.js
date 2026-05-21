@@ -1,374 +1,257 @@
-let records =
-  JSON.parse(localStorage.getItem("records")) || [];
+const DRAFT_KEY = "deliveryFormDraft";
+const MAX_ENTRY_ROWS = 10;
 
-let batchCodes = [];
+let currentInvoiceDisplay = [];
 
-renderTable(records);
+function getEntryRowCount() {
 
-function handleBatch(event){
+  return document.querySelectorAll("#entryBody tr").length;
 
-  if(event.key === "Enter"){
+}
 
-    event.preventDefault();
+function createEntryRowHTML(rowNum) {
 
-    const input =
-      document.getElementById("batchInput");
+  return `
 
-    const value =
-      input.value.trim().toUpperCase();
+    <td class="col-shrink col-num row-num-cell">
 
-    if(value === ""){
-      return;
+      <span class="row-num">${rowNum}</span>
+
+    </td>
+
+    <td class="col-item-cell">
+
+      <textarea
+        class="item-input"
+        placeholder="Item"
+      ></textarea>
+
+    </td>
+
+    <td class="col-shrink col-qty-cell">
+
+      <input
+        type="number"
+        class="qty-input"
+        placeholder="Qty"
+      >
+
+    </td>
+
+    <td class="col-fill col-batch-cell">
+
+      <textarea
+        class="batch-input"
+        placeholder="A010126--1, SH010126--2 (4 per row)"
+        onblur="formatBatchInput(this)"
+      ></textarea>
+
+    </td>
+
+    <td class="col-shrink col-action action-cell">
+
+      <button
+        type="button"
+        class="delete-btn"
+        onclick="deleteRow(this)"
+      >
+        Delete
+      </button>
+
+    </td>
+
+  `;
+
+}
+
+function updateRowNumbers() {
+
+  const rows =
+    document.querySelectorAll("#entryBody tr");
+
+  rows.forEach((row, index) => {
+
+    const numCell =
+      row.querySelector(".row-num");
+
+    if (numCell) {
+
+      numCell.textContent = index + 1;
+
     }
 
-    if(!validateBatch(value)){
+  });
 
-      document.getElementById("error").innerText =
-        "Invalid Batch Format";
+  const addBtn =
+    document.getElementById("addRowBtn");
 
-      return;
+  if (addBtn) {
 
-    }
-
-    document.getElementById("error").innerText = "";
-
-    batchCodes.push(value);
-
-    document.getElementById("combinedCode").value =
-      batchCodes.join(", ");
-
-    calculateTotalQty();
-
-    input.value = "";
+    addBtn.disabled =
+      rows.length >= MAX_ENTRY_ROWS;
 
   }
 
 }
 
-function validateBatch(batch){
+function formatBatchInput(textarea) {
 
-  const normal =
-    /^[A-Z]+\d{6}--\d+$/;
+  textarea.value =
+    batchCodeDisplayLines(textarea.value).join("\n");
 
-  const noOperator =
-    /^NA\d{6}--\d+$/;
+  // AUTO CALCULATE QTY
 
-  const noDate =
-    /^[A-Z]+NA--\d+$/;
+  const row = textarea.closest("tr");
 
-  return (
-    normal.test(batch) ||
-    noOperator.test(batch) ||
-    noDate.test(batch)
+  if (!row) return;
+
+  const qtyInput =
+    row.querySelector(".qty-input");
+
+  if (!qtyInput) return;
+
+  const codes =
+    splitBatchCodes(textarea.value);
+
+  let totalQty = 0;
+
+  codes.forEach(code => {
+
+    // SUPPORT PLACEHOLDER
+    // Example: 0-4
+
+    if (/^0-\d+$/.test(code.trim())) {
+
+      const placeholderQty =
+        parseInt(code.split("-")[1]) || 0;
+
+      totalQty += placeholderQty;
+
+      return;
+
+    }
+
+    const match =
+      code.match(/--(\d+)$/);
+
+    if (match) {
+
+      totalQty +=
+        parseInt(match[1]) || 0;
+
+    }
+
+  });
+
+  // ONLY AUTO FILL IF EMPTY
+
+  if (
+    qtyInput.value.trim() === ""
+  ) {
+
+    qtyInput.value = totalQty;
+
+  }
+
+  saveDraft();
+
+}
+
+function renderCurrentInvoiceTable() {
+
+  renderRecordsTableBody(
+    "currentRecordBody",
+    currentInvoiceDisplay,
+    {
+
+      deleteHandler: "deleteCurrentInvoiceRow",
+
+      getDeleteIndex: (_record, index) => index
+
+    }
   );
 
 }
 
-function calculateTotalQty(){
+function getDeliveryExportRows() {
 
-  let total = 0;
+  const rows = [];
 
-  batchCodes.forEach(code => {
+  document.querySelectorAll("#entryBody tr").forEach(row => {
 
-    const qty =
-      Number(code.split("--")[1]);
-
-    total += qty;
-
-  });
-
-  document.getElementById("totalQty").innerText =
-    total;
-
-}
-
-/* CLEAN EXCEL TEXT */
-
-function cleanItemText(text){
-
-  return text
-
-    // remove line breaks
-    .replace(/\r?\n|\r/g," ")
-
-    // remove weird double quotes
-    .replace(/""/g,'"')
-
-    // smart quotes
-    .replace(/[“”]/g,'"')
-
-    .replace(/[‘’]/g,"'")
-
-    // remove extra spaces
-    .replace(/\s+/g," ")
-
-    .trim();
-
-}
-
-function saveRecord(){
-
-  const invoice =
-    document.getElementById("invoice")
-    .value
-    .trim();
-
-  let item =
-    document.getElementById("item")
-    .value
-    .trim();
-
-  item = cleanItemText(item);
-
-  const error =
-    document.getElementById("error");
-
-  error.innerText = "";
-
-  if(invoice === "" || item === ""){
-
-    error.innerText =
-      "Please fill Invoice No and Item";
-
-    return;
-
-  }
-
-  if(batchCodes.length === 0){
-
-    error.innerText =
-      "Please enter at least one Batch Code";
-
-    return;
-
-  }
-
-  batchCodes.forEach(batch => {
-
-    let operator = "NA";
-
-    let date = "NA";
-
-    const split =
-      batch.split("--");
+    const item =
+      row.querySelector(".item-input")
+        ?.value
+        .trim() || "";
 
     const qty =
-      split[1];
+      row.querySelector(".qty-input")
+        ?.value
+        .trim() || "";
 
-    const firstPart =
-      split[0];
+    const batch =
+      row.querySelector(".batch-input")
+        ?.value
+        .trim() || "";
 
-    // MH010125
+    if (!item && !batch) return;
 
-    if(/^[A-Z]+\d{6}$/.test(firstPart)){
+    rows.push({
 
-      const match =
-        firstPart.match(/^([A-Z]+)(\d{6})$/);
+      "Item(s)": item,
 
-      operator =
-        match[1];
+      "Quantity": qty,
 
-      const rawDate =
-        match[2];
-
-      const day =
-        rawDate.substring(0,2);
-
-      const month =
-        rawDate.substring(2,4);
-
-      const year =
-        rawDate.substring(4,6);
-
-      date =
-        `${day}/${month}/20${year}`;
-
-    }
-
-    // NA010125
-
-    else if(/^NA\d{6}$/.test(firstPart)){
-
-      operator = "NA";
-
-      const rawDate =
-        firstPart.substring(2);
-
-      const day =
-        rawDate.substring(0,2);
-
-      const month =
-        rawDate.substring(2,4);
-
-      const year =
-        rawDate.substring(4,6);
-
-      date =
-        `${day}/${month}/20${year}`;
-
-    }
-
-    // MHNA
-
-    else if(/^[A-Z]+NA$/.test(firstPart)){
-
-      operator =
-        firstPart.replace("NA","");
-
-      date = "NA";
-
-    }
-
-    records.push({
-
-      invoice,
-      item,
-      operator,
-      date,
-      qty,
-
-      combine:
-        `${qty}--${invoice}`
+      "Manufactured Code":
+        batch
+          ? formatBatchForExport(batch)
+          : ""
 
     });
 
   });
 
-  localStorage.setItem(
-    "records",
-    JSON.stringify(records)
-  );
-
-  renderTable(records);
-
-  newInv();
+  return rows;
 
 }
 
-function renderTable(data){
+function exportDeliveryExcel() {
 
-  const table =
-    document.getElementById("recordTable");
+  const invoice =
+    document.getElementById("invoiceNo")
+      .value
+      .trim();
 
-  table.innerHTML = "";
+  if (!invoice) {
 
-  // NEWEST FIRST
+    alert("Please enter Invoice No");
 
-  const reversed =
-    [...data].reverse();
+    return;
 
-  reversed.forEach((record,index) => {
+  }
 
-    table.innerHTML += `
-      <tr>
+  const rows = getDeliveryExportRows();
 
-        <td>${record.invoice}</td>
+  if (rows.length === 0) {
 
-        <td>${record.item}</td>
+    alert("No delivery rows to export. Enter item and manufactured code.");
 
-        <td>${record.operator}</td>
+    return;
 
-        <td>${record.date}</td>
-
-        <td>${record.qty}</td>
-
-        <td>${record.combine}</td>
-
-        <td>
-
-          <button
-            class="delete-btn"
-            onclick="deleteRecord(${data.length - 1 - index})"
-          >
-            Delete
-          </button>
-
-        </td>
-
-      </tr>
-    `;
-
-  });
-
-}
-
-function deleteRecord(index){
-
-  records.splice(index,1);
-
-  localStorage.setItem(
-    "records",
-    JSON.stringify(records)
-  );
-
-  renderTable(records);
-
-}
-
-function filterTable(){
-
-  const keyword =
-    document.getElementById("searchInput")
-    .value
-    .toLowerCase();
-
-  const filtered =
-    records.filter(record =>
-
-      record.invoice.toLowerCase().includes(keyword)
-
-      ||
-
-      record.item.toLowerCase().includes(keyword)
-
-      ||
-
-      record.operator.toLowerCase().includes(keyword)
-
-    );
-
-  renderTable(filtered);
-
-}
-
-function newInv(){
-
-  document.getElementById("invoice").value = "";
-
-  document.getElementById("item").value = "";
-
-  document.getElementById("batchInput").value = "";
-
-  document.getElementById("combinedCode").value = "";
-
-  document.getElementById("totalQty").innerText = "0";
-
-  document.getElementById("error").innerText = "";
-
-  batchCodes = [];
-
-}
-
-function exportExcel(){
-
-  const excelData = records.map(record => ({
-
-    "Inv No": record.invoice,
-
-    "Item": record.item,
-
-    "Operator": record.operator,
-
-    "Date": record.date,
-
-    "Quantity": record.qty,
-
-    "Combine INV&QTY": record.combine
-
-  }));
+  }
 
   const worksheet =
-    XLSX.utils.json_to_sheet(excelData);
+    XLSX.utils.json_to_sheet(rows);
+
+  worksheet["!cols"] = [
+
+    { wch: 26 },
+
+    { wch: 8 },
+
+    { wch: 50 }
+
+  ];
 
   const workbook =
     XLSX.utils.book_new();
@@ -376,12 +259,540 @@ function exportExcel(){
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    "Production Record"
+    "Delivery Record"
   );
+
+  const safeInvoice =
+    invoice.replace(/[^a-zA-Z0-9_-]/g, "_");
 
   XLSX.writeFile(
     workbook,
-    "production_record.xlsx"
+    `Delivery_Record_${safeInvoice}.xlsx`
   );
+
+}
+
+function rebuildPrintBody() {
+
+  const printBody =
+    document.getElementById("printBody");
+
+  printBody.innerHTML = "";
+
+  const rows =
+    document.querySelectorAll("#entryBody tr");
+
+  let validRowCount = 0;
+
+  rows.forEach(row => {
+
+    let item =
+      row.querySelector(".item-input")
+        ?.value
+        .trim() || "";
+
+    const qty =
+      row.querySelector(".qty-input")
+        ?.value
+        .trim() || "";
+
+    const batchInput =
+      row.querySelector(".batch-input");
+
+    if (!batchInput) return;
+
+    const batch =
+      batchInput.value.trim();
+
+    if (!item || !batch) return;
+
+    validRowCount++;
+
+    // PRINT ONLY:
+    // Auto line break before "(Lock"
+
+    if (item.includes("(Lock")) {
+
+      item =
+        item.replace(/\s*\(Lock/g, "<br>(Lock");
+
+    }
+
+    const wrappedBatch =
+      wrapBatchCode(batch.replace(/\n/g, ","));
+
+    printBody.innerHTML += `
+
+      <tr>
+
+        <td class="print-col-item">
+          ${item}
+        </td>
+
+        <td class="print-col-qty">
+          ${qty}
+        </td>
+
+        <td class="print-col-batch batch-cell">
+          ${wrappedBatch}
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+  // Dynamic Delivered On spacing
+
+  const deliverySection =
+    document.getElementById("deliverySection");
+
+  if (deliverySection) {
+
+    if (validRowCount <= 4) {
+
+      deliverySection.style.marginTop = "90pt";
+
+    }
+    else if (validRowCount <= 10) {
+
+      deliverySection.style.marginTop = "54pt";
+
+    }
+    else {
+
+      deliverySection.style.marginTop = "18pt";
+
+    }
+
+  }
+
+}
+
+function deleteCurrentInvoiceRow(index) {
+
+  const removed =
+    currentInvoiceDisplay[index];
+
+  if (removed) {
+
+    const stored =
+      JSON.parse(localStorage.getItem("records"))
+      || [];
+
+    const storedIndex =
+      stored.findIndex(record =>
+
+        record.invoice === removed.invoice
+
+        && record.rawCode === removed.rawCode
+
+        && record.item === removed.item
+
+      );
+
+    if (storedIndex >= 0) {
+
+      stored.splice(storedIndex, 1);
+
+      localStorage.setItem(
+        "records",
+        JSON.stringify(stored)
+      );
+
+    }
+
+  }
+
+  currentInvoiceDisplay.splice(index, 1);
+
+  renderCurrentInvoiceTable();
+
+  rebuildPrintBody();
+
+  saveDraft();
+
+}
+
+function saveDraft() {
+
+  const rows =
+    [...document.querySelectorAll("#entryBody tr")]
+      .map(row => ({
+
+        item:
+          row.querySelector(".item-input")?.value ?? "",
+
+        qty:
+          row.querySelector(".qty-input")?.value ?? "",
+
+        batch:
+          row.querySelector(".batch-input")?.value ?? ""
+
+      }));
+
+  sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+
+    invoice:
+      document.getElementById("invoiceNo").value,
+
+    deliveryDate:
+      document.getElementById("deliveryDate").value,
+
+    rows,
+
+    currentInvoiceDisplay,
+
+    printBodyHTML:
+      document.getElementById("printBody").innerHTML,
+
+    printDeliveryDate:
+      document.getElementById("printDeliveryDate").innerText
+
+  }));
+
+}
+
+function loadDraft() {
+
+  const raw = sessionStorage.getItem(DRAFT_KEY);
+
+  if (!raw) return;
+
+  const draft = JSON.parse(raw);
+
+  document.getElementById("invoiceNo").value =
+    draft.invoice || "";
+
+  document.getElementById("deliveryDate").value =
+    draft.deliveryDate || "";
+
+  const tbody = document.getElementById("entryBody");
+
+  tbody.innerHTML = "";
+
+  const rowData =
+    draft.rows?.length ? draft.rows : [{}];
+
+  rowData.forEach(r => {
+
+    addRow();
+
+    const tr = tbody.lastElementChild;
+
+    tr.querySelector(".item-input").value =
+      r.item || "";
+
+    tr.querySelector(".qty-input").value =
+      r.qty || "";
+
+    tr.querySelector(".batch-input").value =
+      r.batch || "";
+
+  });
+
+  if (draft.currentInvoiceDisplay) {
+
+    currentInvoiceDisplay =
+      draft.currentInvoiceDisplay.map(row => {
+
+        if (row.rawCode) {
+
+          return row;
+
+        }
+
+        if (row.batch && row.invoice && row.item) {
+
+          return createRecordFromBatch(
+
+            row.invoice,
+
+            row.deliveryDate || "",
+
+            row.item,
+
+            row.batch
+
+          );
+
+        }
+
+        return row;
+
+      });
+
+    renderCurrentInvoiceTable();
+
+  } else if (draft.currentRecordHTML) {
+
+    document.getElementById("currentRecordBody").innerHTML =
+      draft.currentRecordHTML;
+
+  } else {
+
+    currentInvoiceDisplay = [];
+
+    renderCurrentInvoiceTable();
+
+  }
+
+  document.getElementById("printDeliveryDate").innerText =
+    draft.printDeliveryDate || "";
+
+  if (draft.printBodyHTML) {
+
+    document.getElementById("printBody").innerHTML =
+      draft.printBodyHTML;
+
+  } else {
+
+    rebuildPrintBody();
+
+  }
+
+  updateRowNumbers();
+
+}
+
+function goToRecords() {
+
+  saveDraft();
+
+  window.open("records.html", "_blank");
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  loadDraft();
+
+  if (!sessionStorage.getItem(DRAFT_KEY)) {
+
+    updateRowNumbers();
+
+  }
+
+  const container =
+    document.querySelector(".container.screen-only");
+
+  if (container) {
+
+    container.addEventListener("input", saveDraft);
+
+    container.addEventListener("change", saveDraft);
+
+  }
+
+});
+
+function addRow() {
+
+  if (getEntryRowCount() >= MAX_ENTRY_ROWS) {
+
+    alert("Maximum 10 rows allowed.");
+
+    return;
+
+  }
+
+  const tbody =
+    document.getElementById("entryBody");
+
+  const row = document.createElement("tr");
+
+  row.innerHTML =
+    createEntryRowHTML(getEntryRowCount() + 1);
+
+  tbody.appendChild(row);
+
+  updateRowNumbers();
+
+  saveDraft();
+
+}
+
+function deleteRow(button) {
+
+  const tbody =
+    document.getElementById("entryBody");
+
+  if (tbody.querySelectorAll("tr").length <= 1) {
+
+    alert("At least one row is required.");
+
+    return;
+
+  }
+
+  button.closest("tr").remove();
+
+  updateRowNumbers();
+
+  saveDraft();
+
+}
+
+function formatDate(dateString) {
+
+  if (!dateString) return "";
+
+  const months = [
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+  ];
+
+  const date = new Date(dateString);
+
+  const day =
+    String(date.getDate()).padStart(2, "0");
+
+  const month =
+    months[date.getMonth()];
+
+  const year =
+    date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+
+}
+
+function saveRecord() {
+
+  const invoice =
+    document.getElementById("invoiceNo")
+      .value
+      .trim();
+
+  const deliveryDate =
+    document.getElementById("deliveryDate")
+      .value;
+
+  if (!invoice) {
+
+    alert("Please enter Invoice No");
+
+    return;
+
+  }
+
+  const rows =
+    document.querySelectorAll("#entryBody tr");
+
+  let records =
+    JSON.parse(localStorage.getItem("records"))
+    || [];
+
+  currentInvoiceDisplay = [];
+
+  rows.forEach(row => {
+
+    const item =
+      row.querySelector(".item-input")
+        .value
+        .trim();
+
+    const qty =
+      row.querySelector(".qty-input")
+        .value
+        .trim();
+
+    const batchInput =
+      row.querySelector(".batch-input");
+
+    formatBatchInput(batchInput);
+
+    const batch =
+      batchInput.value.trim();
+
+    if (!item || !batch) return;
+
+    splitBatchCodes(batch).forEach(code => {
+
+      const record =
+        createRecordFromBatch(
+
+          invoice,
+
+          formatDate(deliveryDate),
+
+          item,
+
+          code
+
+        );
+
+      currentInvoiceDisplay.push(record);
+
+      records.push(record);
+
+    });
+
+  });
+
+  renderCurrentInvoiceTable();
+
+  rebuildPrintBody();
+
+  document.getElementById(
+    "printDeliveryDate"
+  ).innerText =
+    formatDate(deliveryDate);
+
+  localStorage.setItem(
+    "records",
+    JSON.stringify(records)
+  );
+
+  saveDraft();
+
+}
+
+function newInvoice() {
+
+  sessionStorage.removeItem(DRAFT_KEY);
+
+  document.getElementById("invoiceNo")
+    .value = "";
+
+
+  document.getElementById("entryBody")
+    .innerHTML = "";
+
+  currentInvoiceDisplay = [];
+
+  document.getElementById(
+    "currentRecordBody"
+  ).innerHTML = "";
+
+  document.getElementById("printBody").innerHTML = "";
+
+  document.getElementById("printDeliveryDate").innerText = "";
+
+  addRow();
+
+}
+
+function clearEntryContent(){
+
+  document.querySelectorAll("#entryBody tr")
+  .forEach(row => {
+
+    row.querySelector(".item-input").value = "";
+
+    row.querySelector(".qty-input").value = "";
+
+    row.querySelector(".batch-input").value = "";
+
+  });
+
+  currentInvoiceDisplay = [];
+
+  renderCurrentInvoiceTable();
+
+  rebuildPrintBody();
+
+  saveDraft();
 
 }
