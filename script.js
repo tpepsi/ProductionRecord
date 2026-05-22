@@ -31,7 +31,8 @@ function createEntryRowHTML(rowNum) {
     <td class="col-shrink col-qty-cell">
 
       <input
-        type="number"
+        type="text"
+        inputmode="numeric"
         class="qty-input"
         placeholder="Qty"
       >
@@ -96,8 +97,29 @@ function updateRowNumbers() {
 
 function formatBatchInput(textarea) {
 
+  const codes =
+    splitBatchCodes(textarea.value);
+
+  const isSplitScreen =
+    window.innerWidth <= 1200;
+
+  const perLine =
+    isSplitScreen ? 2 : 4;
+
+  const lines = [];
+
+  for (let i = 0; i < codes.length; i += perLine) {
+
+    lines.push(
+      codes
+        .slice(i, i + perLine)
+        .join(", ")
+    );
+
+  }
+
   textarea.value =
-    batchCodeDisplayLines(textarea.value).join("\n");
+    lines.join("\n");
 
   // AUTO CALCULATE QTY
 
@@ -110,8 +132,7 @@ function formatBatchInput(textarea) {
 
   if (!qtyInput) return;
 
-  const codes =
-    splitBatchCodes(textarea.value);
+
 
   let totalQty = 0;
 
@@ -301,10 +322,10 @@ function rebuildPrintBody() {
 
     if (!batchInput) return;
 
-    const batch =
+    let batch =
       batchInput.value.trim();
 
-    if (!item || !batch) return;
+    if (!item) return;
 
     validRowCount++;
 
@@ -318,8 +339,64 @@ function rebuildPrintBody() {
 
     }
 
-    const wrappedBatch =
-      wrapBatchCode(batch.replace(/\n/g, ","));
+    // NO BATCH = NA internally
+
+    if (!batch) {
+
+      batch = "NA";
+
+    }
+
+    // BUILD SLOT ARRAY
+
+    const batchCodes =
+      batch === "NA"
+        ? []
+        : splitBatchCodes(batch);
+
+    const qtyNum =
+      parseInt(qty) || 0;
+
+    const slots = [...batchCodes];
+
+    while (slots.length < qtyNum) {
+
+      slots.push("");
+
+    }
+
+    // BUILD PRINT LINES (FIXED 4 PER ROW)
+
+    const lines = [];
+
+    for (let i = 0; i < slots.length; i += 4) {
+
+      const rowSlots = slots.slice(i, i + 4);
+
+      lines.push(`
+    <div class="print-batch-row">
+      ${rowSlots.map((slot, index) => {
+
+        if (!slot) {
+          return `<span class="print-slot empty">&nbsp;</span>`;
+        }
+
+        const isLastInRow = index === rowSlots.length - 1;
+        const isLastRow = (i + rowSlots.length) >= slots.length;
+
+        const shouldAddComma = !(isLastInRow && isLastRow);
+
+        return `<span class="print-slot">
+    ${slot}${shouldAddComma ? "," : ""}
+  </span>`;
+
+      }).join("")}
+    </div>
+  `);
+
+    }
+
+    const wrappedBatch = lines.join("");
 
     printBody.innerHTML += `
 
@@ -355,11 +432,13 @@ function rebuildPrintBody() {
       deliverySection.style.marginTop = "90pt";
 
     }
+
     else if (validRowCount <= 10) {
 
       deliverySection.style.marginTop = "54pt";
 
     }
+
     else {
 
       deliverySection.style.marginTop = "18pt";
@@ -707,8 +786,11 @@ function saveRecord() {
       batchInput.value.trim();
 
     if (!item || !batch) return;
+    const finalBatch =
+      batch || "NA";
 
-    splitBatchCodes(batch).forEach(code => {
+
+    splitBatchCodes(finalBatch).forEach(code => {
 
       const record =
         createRecordFromBatch(
@@ -774,18 +856,18 @@ function newInvoice() {
 
 }
 
-function clearEntryContent(){
+function clearEntryContent() {
 
   document.querySelectorAll("#entryBody tr")
-  .forEach(row => {
+    .forEach(row => {
 
-    row.querySelector(".item-input").value = "";
+      row.querySelector(".item-input").value = "";
 
-    row.querySelector(".qty-input").value = "";
+      row.querySelector(".qty-input").value = "";
 
-    row.querySelector(".batch-input").value = "";
+      row.querySelector(".batch-input").value = "";
 
-  });
+    });
 
   currentInvoiceDisplay = [];
 
@@ -794,5 +876,141 @@ function clearEntryContent(){
   rebuildPrintBody();
 
   saveDraft();
+
+}
+
+document.addEventListener("keydown", function (e) {
+
+  const active =
+    document.activeElement;
+
+  const selectors = [
+
+    ".item-input",
+
+    ".qty-input",
+
+    ".batch-input"
+
+  ];
+
+  let currentType = null;
+
+  selectors.forEach(selector => {
+
+    if (active.matches(selector)) {
+
+      currentType = selector;
+
+    }
+
+  });
+
+  if (!currentType) return;
+
+  const currentInputs = [
+
+    ...document.querySelectorAll(currentType)
+
+  ];
+
+  const currentIndex =
+    currentInputs.indexOf(active);
+
+  // ENTER / DOWN
+  // SAME COLUMN NEXT ROW
+
+  if (
+
+    e.key === "Enter"
+
+    ||
+
+    e.key === "ArrowDown"
+
+  ) {
+
+    e.preventDefault();
+
+    if (currentIndex < currentInputs.length - 1) {
+
+      currentInputs[currentIndex + 1].focus();
+
+    }
+
+  }
+
+  // UP
+
+  if (e.key === "ArrowUp") {
+
+    e.preventDefault();
+
+    if (currentIndex > 0) {
+
+      currentInputs[currentIndex - 1].focus();
+
+    }
+
+  }
+
+  // RIGHT
+
+  if (e.key === "ArrowRight") {
+
+    e.preventDefault();
+
+    moveHorizontal(active, 1);
+
+  }
+
+  // LEFT
+
+  if (e.key === "ArrowLeft") {
+
+    e.preventDefault();
+
+    moveHorizontal(active, -1);
+
+  }
+
+});
+
+function moveHorizontal(active, direction) {
+
+  const row =
+    active.closest("tr");
+
+  if (!row) return;
+
+  const rowInputs = [
+
+    row.querySelector(".item-input"),
+
+    row.querySelector(".qty-input"),
+
+    row.querySelector(".batch-input")
+
+  ];
+
+  const currentIndex =
+    rowInputs.indexOf(active);
+
+  const nextIndex =
+    currentIndex + direction;
+
+  if (
+
+    nextIndex >= 0
+
+    &&
+
+    nextIndex < rowInputs.length
+
+  ) {
+
+    rowInputs[nextIndex].focus();
+
+  }
 
 }
