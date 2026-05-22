@@ -3,7 +3,7 @@ body {
   margin: 0;
   padding: clamp(12px, 2.5vw, 40px);
   background: #eef4f8;
-  font-family: Arial;
+  font-family: "Inter", "Segoe UI", 'Times New Roman', Times, serif, sans-serif;
   font-weight: 400;
   box-sizing: border-box;
 
@@ -643,7 +643,7 @@ button:hover {
     padding: 0;
     text-align: left;
     font-family: "Times New Roman";
-    font-size: 11pt;
+    font-size: 14pt;
     page-break-inside: avoid;
 
   }
