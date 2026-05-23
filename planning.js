@@ -196,3 +196,11 @@ document.addEventListener(
   "DOMContentLoaded",
   renderPlanningPage
 );
+
+
+function goToManualPlanning(){
+
+  window.location.href =
+    "manual-plan.html";
+
+}

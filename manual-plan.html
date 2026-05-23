@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planning Matrix System</title>
+
+  <link rel="stylesheet" href="manual-plan.css">
+
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="top-bar">
+      <h1>Planning Matrix System</h1>
+
+      <div class="actions">
+        <input type="file" id="excelFile" accept=".xlsx, .xls">
+        <button id="copyBtn">Copy Planning</button>
+      </div>
+    </div>
+
+    <div class="main-layout">
+
+      <!-- LEFT -->
+      <div class="left-panel">
+
+        <h2>Excel Data</h2>
+        <button class="back-btn" onclick="goBackPlanning()">
+          ← Back To Planning
+        </button>
+
+        <!-- FILTER -->
+        <div class="filter-box">
+
+          <input type="text" id="filterInvoice" placeholder="Filter Invoice No">
+
+          <input type="text" id="filterItem" placeholder="Filter Item">
+
+          <input type="text" id="filterOperator" placeholder="Filter Operator">
+
+          <input type="text" id="filterDate" placeholder="Filter Date">
+
+        </div>
+
+        <div class="table-wrapper">
+          <table id="dataTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="right-panel">
+
+        <h2>Planning Matrix</h2>
+
+        <div class="planning-wrapper">
+          <table id="planningTable"></table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="manual-plan.js"></script>
+</body>
+
+</html>
