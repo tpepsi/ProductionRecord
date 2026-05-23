@@ -357,9 +357,32 @@ function rebuildPrintBody() {
     const qtyNum =
       parseInt(qty) || 0;
 
-    const slots = [...batchCodes];
+    const slots = [];
 
-    while (slots.length < qtyNum) {
+
+    let occupiedQty = 0;
+
+    batchCodes.forEach(code => {
+
+      const match = code.match(/--(\d+)$/);
+
+      const codeQty = match
+        ? parseInt(match[1])
+        : 1;
+
+      slots.push(code);
+
+      occupiedQty += codeQty;
+
+    });
+
+    // ONLY add invisible spacing
+    // if occupied qty < total qty
+
+    const remainingQty =
+      qtyNum - occupiedQty;
+
+    for (let i = 0; i < remainingQty; i++) {
 
       slots.push("");
 
