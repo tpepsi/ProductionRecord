@@ -977,63 +977,7 @@ document.addEventListener("keydown", function (e) {
 
   }
 
-  // RIGHT
-
-  if (e.key === "ArrowRight") {
-
-    e.preventDefault();
-
-    moveHorizontal(active, 1);
-
-  }
-
-  // LEFT
-
-  if (e.key === "ArrowLeft") {
-
-    e.preventDefault();
-
-    moveHorizontal(active, -1);
-
-  }
+  
 
 });
 
-function moveHorizontal(active, direction) {
-
-  const row =
-    active.closest("tr");
-
-  if (!row) return;
-
-  const rowInputs = [
-
-    row.querySelector(".item-input"),
-
-    row.querySelector(".qty-input"),
-
-    row.querySelector(".batch-input")
-
-  ];
-
-  const currentIndex =
-    rowInputs.indexOf(active);
-
-  const nextIndex =
-    currentIndex + direction;
-
-  if (
-
-    nextIndex >= 0
-
-    &&
-
-    nextIndex < rowInputs.length
-
-  ) {
-
-    rowInputs[nextIndex].focus();
-
-  }
-
-}

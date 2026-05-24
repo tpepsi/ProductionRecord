@@ -1,4 +1,4 @@
-function getAllRecords(){
+function getAllRecords() {
 
   return JSON.parse(
     localStorage.getItem("records")
@@ -6,31 +6,31 @@ function getAllRecords(){
 
 }
 
-function renderPlanningPage(){
+function renderPlanningPage() {
 
   const invoiceFilter =
     document.getElementById("filterInvoice")
-    ?.value
-    .trim()
-    .toLowerCase() || "";
+      ?.value
+      .trim()
+      .toLowerCase() || "";
 
   const itemFilter =
     document.getElementById("filterItem")
-    ?.value
-    .trim()
-    .toLowerCase() || "";
+      ?.value
+      .trim()
+      .toLowerCase() || "";
 
   const operatorFilter =
     document.getElementById("filterOperator")
-    ?.value
-    .trim()
-    .toLowerCase() || "";
+      ?.value
+      .trim()
+      .toLowerCase() || "";
 
   const dateFilter =
     document.getElementById("filterDate")
-    ?.value
-    .trim()
-    .toLowerCase() || "";
+      ?.value
+      .trim()
+      .toLowerCase() || "";
 
   let records = getAllRecords();
 
@@ -38,19 +38,19 @@ function renderPlanningPage(){
 
     const invoice =
       (record.invoice || "")
-      .toLowerCase();
+        .toLowerCase();
 
     const item =
       (record.item || "")
-      .toLowerCase();
+        .toLowerCase();
 
     const operator =
       (record.operator || "")
-      .toLowerCase();
+        .toLowerCase();
 
     const date =
       (record.date || "")
-      .toLowerCase();
+        .toLowerCase();
 
     return (
 
@@ -78,7 +78,7 @@ function renderPlanningPage(){
 
 }
 
-function renderLeftTable(records){
+function renderLeftTable(records) {
 
   const body =
     document.getElementById(
@@ -113,7 +113,7 @@ function renderLeftTable(records){
 
 }
 
-function renderPlanningMatrix(records){
+function renderPlanningMatrix(records) {
 
   const matrix =
     document.getElementById(
@@ -137,7 +137,7 @@ function renderPlanningMatrix(records){
 
   const perRow = 5;
 
-  for(let i = 0; i < combineList.length; i += perRow){
+  for (let i = 0; i < combineList.length; i += perRow) {
 
     const row =
       document.createElement("tr");
@@ -161,7 +161,7 @@ function renderPlanningMatrix(records){
 
 }
 
-function copyPlanningTable(){
+function copyPlanningTable() {
 
   const rows =
     document.querySelectorAll(
@@ -177,8 +177,8 @@ function copyPlanningTable(){
 
     const rowText =
       [...cells]
-      .map(td => td.innerText)
-      .join("\t");
+        .map(td => td.innerText)
+        .join("\t");
 
     output += rowText + "\n";
 
@@ -198,9 +198,11 @@ document.addEventListener(
 );
 
 
-function goToManualPlanning(){
+function goToManualPlanning() {
 
-  window.location.href =
-    "manual-plan.html";
+  window.open(
+    "manual-plan.html",
+    "_blank"
+  );
 
 }
