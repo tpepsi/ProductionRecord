@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Planning Matrix System</title>
+  <title>Welding Production Delivery Record</title>
 
   <link rel="stylesheet" href="manual-plan.css">
 
   <!-- SheetJS -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.bundle.js"></script>
 </head>
 
 <body>
@@ -17,11 +17,14 @@
   <div class="container">
 
     <div class="top-bar">
-      <h1>Planning Matrix System</h1>
+      <h1>Welding Production Delivery Record</h1>
 
       <div class="actions">
         <input type="file" id="excelFile" accept=".xlsx, .xls">
         <button id="copyBtn">Copy Planning</button>
+        <button id="exportBtn">
+          Export Excel
+        </button>
       </div>
     </div>
 
@@ -38,15 +41,48 @@
         <!-- FILTER -->
         <div class="filter-box">
 
-          <input type="text" id="filterInvoice" placeholder="Filter Invoice No">
+          <div class="filter-group">
 
-          <input type="text" id="filterItem" placeholder="Filter Item">
+            <label>Invoice:</label>
 
-          <input type="text" id="filterOperator" placeholder="Filter Operator">
+            <select id="filterInvoice">
+              <option value="">All</option>
+            </select>
 
-          <input type="text" id="filterDate" placeholder="Filter Date">
+          </div>
+
+          <div class="filter-group">
+
+            <label>Item:</label>
+
+            <select id="filterItem">
+              <option value="">All</option>
+            </select>
+
+          </div>
+
+          <div class="filter-group">
+
+            <label>Operator:</label>
+
+            <select id="filterOperator">
+              <option value="">All</option>
+            </select>
+
+          </div>
+
+          <div class="filter-group">
+
+            <label>Date:</label>
+
+            <select id="filterDate">
+              <option value="">All</option>
+            </select>
+
+          </div>
 
         </div>
+
 
         <div class="table-wrapper">
           <table id="dataTable">

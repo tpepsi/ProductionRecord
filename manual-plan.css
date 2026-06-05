@@ -142,12 +142,33 @@ input[type="file"]::file-selector-button:hover{
   margin-bottom:15px;
 }
 
-.filter-box input{
+.filter-group{
+
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+
+}
+
+.filter-group label{
+
+  font-size:14px;
+  font-weight:bold;
+  color:#333;
+
+}
+
+.filter-group select{
+
   padding:10px;
   border:1px solid #ccc;
   border-radius:8px;
   font-size:14px;
+  background:white;
+
 }
+
+
 
 .back-btn{
 
