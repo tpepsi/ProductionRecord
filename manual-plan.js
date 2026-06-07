@@ -438,7 +438,7 @@ function exportDailyOuputExcel() {
         grouped[key].totalQty += qty;
 
         grouped[key].matrix.push(
-            `${invoice}--${qty}`
+            `${qty}--${invoice}`
         );
 
     });
