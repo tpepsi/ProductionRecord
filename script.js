@@ -929,6 +929,66 @@ document.addEventListener("keydown", function (e) {
 
   });
 
+  document.addEventListener("paste", function (e) {
+
+    const active =
+      document.activeElement;
+
+    if (
+      !active ||
+      !active.classList.contains("item-input")
+    ) {
+      return;
+    }
+
+    const pastedText =
+      (e.clipboardData || window.clipboardData)
+        .getData("text");
+
+    const items =
+      pastedText
+        .split(/\r?\n/)
+        .map(x => x.trim())
+        .filter(x => x !== "");
+
+    if (items.length <= 1) {
+      return;
+    }
+
+    e.preventDefault();
+
+    const allItemInputs =
+      [...document.querySelectorAll(".item-input")];
+
+    let startIndex =
+      allItemInputs.indexOf(active);
+
+    items.forEach((item, index) => {
+
+      const targetIndex =
+        startIndex + index;
+
+      while (
+        targetIndex >=
+        document.querySelectorAll(".item-input").length
+      ) {
+        addRow();
+      }
+
+      document
+        .querySelectorAll(".item-input")
+      [targetIndex]
+        .value = item;
+
+    });
+
+    saveDraft();
+
+  });
+
+
+
+
   if (!currentType) return;
 
   const currentInputs = [
@@ -977,7 +1037,7 @@ document.addEventListener("keydown", function (e) {
 
   }
 
-  
+
 
 });
 

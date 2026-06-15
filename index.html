@@ -113,7 +113,7 @@
 
             <td class="col-shrink col-qty-cell">
 
-              <input type="text" inputmode="numeric"class="qty-input" placeholder="Qty">
+              <input type="text" inputmode="numeric" class="qty-input" placeholder="Qty">
 
             </td>
 
@@ -142,28 +142,27 @@
 
     <div class="bottom-buttons">
 
-      <div class="bottom-left-group">
+      <button type="button" class="print-btn" onclick="window.print()">
+        Print
+      </button>
 
-        <button type="button" class="btn-left" onclick="window.print()">
-          Print
+      <button type="button" class="save-btn" onclick="saveRecord()">
+        Save Record
+      </button>
+
+      <div class="view-record-group">
+
+        <button type="button" class="view-btn" onclick="goToRecords()">
+          View Record
         </button>
 
-        <button type="button" onclick="exportDeliveryExcel()">
+        <button type="button" class="export-btn" onclick="exportDeliveryExcel()">
           Export Excel
         </button>
 
       </div>
 
-      <button type="button" class="btn-center" onclick="saveRecord()">
-        Save Record
-      </button>
-
-      <button type="button" class="btn-right" onclick="goToRecords()">
-        View Record
-      </button>
-
     </div>
-
     <div class="current-record">
 
       <h2>Current Invoice Record</h2>
