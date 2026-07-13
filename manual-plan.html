@@ -4,8 +4,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welding Production Delivery Record</title>
+  <header class="app-header">
 
+
+    <nav class="top-nav">
+
+      <a href="index.html" class="nav-link">
+        Delivery Record
+      </a>
+
+      <a href="records.html" class="nav-link">
+        Output Record
+      </a>
+
+      <a href="manual-plan.html" class="nav-link active">
+        Welding Prod Record
+      </a>
+
+    </nav>
+
+  </header>
+  <link rel="stylesheet" href="header.css">
+  
   <link rel="stylesheet" href="manual-plan.css">
 
   <!-- SheetJS -->
@@ -33,10 +53,6 @@
       <!-- LEFT -->
       <div class="left-panel">
 
-        <h2>Excel Data</h2>
-        <button class="back-btn" onclick="goBackPlanning()">
-          ← Back To Planning
-        </button>
 
         <!-- FILTER -->
         <div class="filter-box">
@@ -46,7 +62,7 @@
             <label>Invoice:</label>
 
             <select id="filterInvoice">
-              <option value="">All</option>
+              <option value="">All Invoices</option>
             </select>
 
           </div>
@@ -56,7 +72,7 @@
             <label>Item:</label>
 
             <select id="filterItem">
-              <option value="">All</option>
+              <option value="">All Items</option>
             </select>
 
           </div>
@@ -66,17 +82,29 @@
             <label>Operator:</label>
 
             <select id="filterOperator">
-              <option value="">All</option>
+              <option value="">All Operators</option>
             </select>
 
           </div>
 
           <div class="filter-group">
 
+            <label>Year:</label>
+
+            <select id="filterYear">
+              <option value="">All Years</option>
+            </select>
+
+            <label>Month:</label>
+
+            <select id="filterMonth">
+              <option value="">All Months</option>
+            </select>
+
             <label>Date:</label>
 
             <select id="filterDate">
-              <option value="">All</option>
+              <option value="">All Dates</option>
             </select>
 
           </div>

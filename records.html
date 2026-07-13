@@ -7,8 +7,30 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Production Record</title>
+  <header class="app-header">
 
+
+
+    <nav class="top-nav">
+
+      <a href="index.html" class="nav-link">
+        Delivery Record
+      </a>
+
+      <a href="records.html" class="nav-link active">
+        Output Record
+      </a>
+
+      <a href="manual-plan.html" class="nav-link">
+        Welding Prod Record
+      </a>
+
+    </nav>
+
+  </header>
+
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="planning.css">
   <link rel="stylesheet" href="style.css">
 
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
@@ -25,13 +47,6 @@
 
       <div class="records-toolbar-left">
 
-        <a href="index.html">
-
-          <button type="button">
-            Back to Delivery Record Form
-          </button>
-
-        </a>
 
       </div>
 
@@ -122,9 +137,7 @@
         Go
       </button>
 
-      <button onclick="window.location.href='planning.html'">
-        Planning Panel
-      </button>
+    
 
     </div>
 

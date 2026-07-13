@@ -34,6 +34,20 @@ function handleFile(e) {
 
         originalData = jsonData;
 
+        populateFilters(originalData);
+
+        populateYear();
+
+        populateMonth();
+
+        populateDate();
+
+
+
+        populateMonth();
+
+        populateDate();
+
         displayTable(originalData);
 
         generatePlanning(originalData);
@@ -243,7 +257,7 @@ function generatePlanning(data) {
             "";
 
         td.innerHTML = `
-            <div>${qty} -- ${invoice}</div>
+            <div>${qty}--${invoice}</div>
         `;
 
         tr.appendChild(td);
@@ -320,6 +334,16 @@ function applyFilters() {
             .value
             .toLowerCase();
 
+    const yearFilter =
+        document
+            .getElementById("filterYear")
+            .value;
+
+    const monthFilter =
+        document
+            .getElementById("filterMonth")
+            .value;
+
     const filteredData = originalData.filter(row => {
 
         const invoice =
@@ -366,6 +390,24 @@ function applyFilters() {
 
             (!dateFilter || date === dateFilter)
 
+            &&
+
+            (
+                !yearFilter ||
+
+                date.endsWith(yearFilter)
+            )
+
+            &&
+
+            (
+                !monthFilter ||
+
+                monthOrder[
+                Number(date.split("/")[1]) - 1
+                ] === monthFilter
+            )
+
         );
 
     });
@@ -375,12 +417,6 @@ function applyFilters() {
     generatePlanning(filteredData);
 }
 
-function goBackPlanning() {
-
-    window.location.href =
-        "planning.html";
-
-}
 
 
 
@@ -498,121 +534,200 @@ function exportDailyOuputExcel() {
     });
 
     const worksheet =
-        XLSX.utils.json_to_sheet(exportData);
+        XLSX.utils.aoa_to_sheet([]);
 
-    // COLUMN WIDTH
-    worksheet["!cols"] = [
+    const operatorOrder = [
 
-        { wch: 8 }, // Operator
-        { wch: 28 }, // Item
-        { wch: 8 }, // Total Qty
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 }
+        "R",
+        "MR",
+        "E",
+        "P",
+        "S",
+        "MA",
+        "A",
+        "Y",
+        "H",
+        "SH",
+        "MH"
 
     ];
+    const sortedGroups =
+        Object.values(grouped).sort((a, b) => {
 
-    const range =
-        XLSX.utils.decode_range(
-            worksheet["!ref"]
-        );
 
-    // STYLE ALL CELLS
-    for (let R = range.s.r; R <= range.e.r; ++R) {
+            // 第一层：Operator 顺序
 
-        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const opA =
+                operatorOrder.indexOf(a.operator);
 
-            const cellAddress =
-                XLSX.utils.encode_cell({
-                    r: R,
-                    c: C
-                });
+            const opB =
+                operatorOrder.indexOf(b.operator);
 
-            if (!worksheet[cellAddress]) continue;
 
-            // HEADER ROW
-            if (R === 0) {
+            if (opA !== opB) {
 
-                worksheet[cellAddress].s = {
-
-                    font: {
-                        name: "Cambria",
-                        sz: 12,
-                        bold: true
-                    },
-
-                    alignment: {
-                        vertical: "center",
-                        horizontal: "center",
-                        wrapText: true
-                    },
-
-                    border: {
-
-                        top: {
-                            style: "thick",
-                            color: { rgb: "000000" }
-                        },
-
-                        bottom: {
-                            style: "thick",
-                            color: { rgb: "000000" }
-                        },
-
-                        left: {
-                            style: "medium",
-                            color: { rgb: "000000" }
-                        },
-
-                        right: {
-                            style: "medium",
-                            color: { rgb: "000000" }
-                        }
-
-                    }
-
-                };
+                return opA - opB;
 
             }
 
-            // NORMAL ROW
-            else {
 
-                worksheet[cellAddress].s = {
+            // 第二层：同 Operator，Item A-Z
+
+            return String(a.item)
+                .localeCompare(
+                    String(b.item)
+                );
+
+
+        });
+
+
+
+
+
+
+        const workbook =
+            XLSX.utils.book_new();
+
+        const selectedDate =
+            document
+                .getElementById("filterDate")
+                .value || "All Date";
+
+
+        // 把整张表往下移两行
+        XLSX.utils.sheet_add_aoa(
+            worksheet,
+            [
+                [`Welding Production Output - ${selectedDate}`]
+            ],
+            {
+                origin: "A1"
+            }
+        );
+
+
+        // Merge A1:H1
+        worksheet["!merges"] = [
+            {
+                s: { r: 0, c: 0 },   // A1
+                e: { r: 0, c: 7 }    // H1
+            }
+        ];
+
+
+        // Style A1
+        worksheet["A1"].s = {
+
+            font: {
+                name: "Cambria",
+                sz: 14,
+                bold: true
+            },
+
+            alignment: {
+                horizontal: "center",
+                vertical: "center"
+            }
+
+        };
+
+        // 原本资料从第4列开始
+        XLSX.utils.sheet_add_json(
+
+            worksheet,
+
+            exportData,
+
+            {
+
+                origin: "A2",
+
+                skipHeader: false
+
+            }
+
+        );
+
+        // Column Width
+        worksheet["!cols"] = [
+
+            { wch: 8 },
+            { wch: 28 },
+            { wch: 8 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 }
+
+        ];
+
+        // Style
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
+
+        for (let R = range.s.r; R <= range.e.r; R++) {
+
+            for (let C = range.s.c; C <= range.e.c; C++) {
+
+                const addr = XLSX.utils.encode_cell({ r: R, c: C });
+
+                if (!worksheet[addr]) continue;
+
+                worksheet[addr].s = {
 
                     font: {
+
                         name: "Cambria",
-                        sz: 12
+
+                        sz: 12,
+
+                        bold: R === 1
+
                     },
 
                     alignment: {
-                        vertical: "center",
+
                         horizontal: "center",
+
+                        vertical: "center",
+
                         wrapText: true
+
                     },
 
                     border: {
 
                         top: {
-                            style: "thin",
+
+                            style: R === 1 ? "thick" : "thin",
+
                             color: { rgb: "000000" }
+
                         },
 
                         bottom: {
-                            style: "thin",
+
+                            style: R === 1 ? "thick" : "thin",
+
                             color: { rgb: "000000" }
+
                         },
 
                         left: {
+
                             style: "medium",
+
                             color: { rgb: "000000" }
+
                         },
 
                         right: {
+
                             style: "medium",
+
                             color: { rgb: "000000" }
+
                         }
 
                     }
@@ -623,100 +738,346 @@ function exportDailyOuputExcel() {
 
         }
 
-    }
+        XLSX.utils.book_append_sheet(
 
-    const workbook =
-        XLSX.utils.book_new();
+            workbook,
 
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Planning"
-    );
+            worksheet,
 
-    XLSX.writeFile(
-        workbook,
-        "Welding Production Delivery Record.xlsx"
-    );
-
-}
-
-
-
-function getFilteredData(){
-
-    const invoiceFilter =
-        document
-        .getElementById("filterInvoice")
-        .value
-        .toLowerCase();
-
-    const itemFilter =
-        document
-        .getElementById("filterItem")
-        .value
-        .toLowerCase();
-
-    const operatorFilter =
-        document
-        .getElementById("filterOperator")
-        .value
-        .toLowerCase();
-
-    const dateFilter =
-        document
-        .getElementById("filterDate")
-        .value
-        .toLowerCase();
-
-    return originalData.filter(row => {
-
-        const invoice =
-            String(
-                row.Invoice ||
-                row.invoice ||
-                ""
-            ).toLowerCase();
-
-        const item =
-            String(
-                row.Item ||
-                row.item ||
-                ""
-            ).toLowerCase();
-
-        const operator =
-            String(
-                row.Operator ||
-                row.operator ||
-                ""
-            ).toLowerCase();
-
-        const date =
-            String(
-                row.Date ||
-                row.date ||
-                ""
-            ).toLowerCase();
-
-        return (
-
-            (!invoiceFilter || invoice === invoiceFilter)
-
-            &&
-
-            (!itemFilter || item === itemFilter)
-
-            &&
-
-            (!operatorFilter || operator === operatorFilter)
-
-            &&
-
-            (!dateFilter || date === dateFilter)
+            "Welding Production Output"
 
         );
 
-    });
+        const fileDate =
+            selectedDate
+                .replace(/\//g, "-");
 
-}
+        XLSX.writeFile(
+
+            workbook,
+
+            `Welding Production Output - ${fileDate}.xlsx`
+
+        );
+
+    }
+
+
+
+function getFilteredData() {
+
+            const invoiceFilter =
+                document
+                    .getElementById("filterInvoice")
+                    .value
+                    .toLowerCase();
+
+            const itemFilter =
+                document
+                    .getElementById("filterItem")
+                    .value
+                    .toLowerCase();
+
+            const operatorFilter =
+                document
+                    .getElementById("filterOperator")
+                    .value
+                    .toLowerCase();
+
+            const dateFilter =
+                document
+                    .getElementById("filterDate")
+                    .value
+                    .toLowerCase();
+
+            return originalData.filter(row => {
+
+                const invoice =
+                    String(
+                        row.Invoice ||
+                        row.invoice ||
+                        ""
+                    ).toLowerCase();
+
+                const item =
+                    String(
+                        row.Item ||
+                        row.item ||
+                        ""
+                    ).toLowerCase();
+
+                const operator =
+                    String(
+                        row.Operator ||
+                        row.operator ||
+                        ""
+                    ).toLowerCase();
+
+                const date =
+                    String(
+                        row.Date ||
+                        row.date ||
+                        ""
+                    ).toLowerCase();
+
+                return (
+
+                    (!invoiceFilter || invoice === invoiceFilter)
+
+                    &&
+
+                    (!itemFilter || item === itemFilter)
+
+                    &&
+
+                    (!operatorFilter || operator === operatorFilter)
+
+                    &&
+
+                    (!dateFilter || date === dateFilter)
+
+                );
+
+            });
+
+        }
+
+
+function populateYear() {
+
+            const select =
+                document.getElementById("filterYear");
+
+            select.innerHTML =
+                `<option value="">All Years</option>`;
+
+            const years =
+                [...new Set(
+
+                    originalData.map(row => {
+
+                        const date =
+                            row.Date ||
+                            row.date ||
+                            "";
+
+                        if (!date) return "";
+
+                        return date.split("/")[2];
+
+                    })
+
+                )]
+                    .filter(Boolean)
+                    .sort();
+
+            years.forEach(year => {
+
+                select.innerHTML +=
+                    `<option value="${year}">
+                ${year}
+            </option>`;
+
+            });
+
+        }
+
+
+const monthOrder = [
+
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+
+    ];
+
+
+    function populateMonth() {
+
+        const year =
+            document.getElementById("filterYear").value;
+
+        const select =
+            document.getElementById("filterMonth");
+
+        select.innerHTML =
+            `<option value="">All Months</option>`;
+
+        let months =
+            originalData.filter(row => {
+
+                if (!year) return true;
+
+                const date =
+                    row.Date ||
+                    row.date ||
+                    "";
+
+                return date.endsWith(year);
+
+            });
+
+        months =
+            [...new Set(
+
+                months.map(row => {
+
+                    const date =
+                        row.Date ||
+                        row.date;
+
+                    const month =
+                        Number(date.split("/")[1]);
+
+                    return monthOrder[month - 1];
+
+                })
+
+            )];
+
+        months.sort(
+            (a, b) =>
+                monthOrder.indexOf(a) - monthOrder.indexOf(b)
+        );
+
+        months.forEach(month => {
+
+            select.innerHTML +=
+
+                `<option value="${month}">
+            ${month}
+        </option>`;
+
+        });
+
+    }
+
+
+    function populateDate() {
+
+        const year =
+            document.getElementById("filterYear").value;
+
+        const month =
+            document.getElementById("filterMonth").value;
+
+        const select =
+            document.getElementById("filterDate");
+
+        select.innerHTML =
+            `<option value="">All Dates</option>`;
+
+        let dates =
+            originalData.filter(row => {
+
+                const date =
+                    row.Date ||
+                    row.date ||
+                    "";
+
+                if (!date) return false;
+
+                const parts =
+                    date.split("/");
+
+                const y = parts[2];
+
+                const m =
+                    monthOrder[
+                    Number(parts[1]) - 1
+                    ];
+
+                return (
+
+                    (!year || y === year)
+
+                    &&
+
+                    (!month || m === month)
+
+                );
+
+            });
+
+        dates =
+            [...new Set(
+
+                dates.map(row =>
+
+                    row.Date ||
+                    row.date
+
+                )
+
+            )];
+
+        dates.sort((a, b) => {
+
+            const pa = a.split("/");
+
+            const pb = b.split("/");
+
+            return new Date(
+
+                pa[2],
+                pa[1] - 1,
+                pa[0]
+
+            ) -
+
+                new Date(
+
+                    pb[2],
+                    pb[1] - 1,
+                    pb[0]
+
+                );
+
+        });
+
+        dates.forEach(date => {
+
+            select.innerHTML +=
+
+                `<option value="${date}">
+            ${date}
+        </option>`;
+
+        });
+
+    }
+
+
+
+
+
+    document
+        .getElementById("filterYear")
+        .addEventListener("change", () => {
+
+            populateMonth();
+
+            populateDate();
+
+            applyFilters();
+
+        });
+
+    document
+        .getElementById("filterMonth")
+        .addEventListener("change", () => {
+
+            populateDate();
+
+            applyFilters();
+
+        });
