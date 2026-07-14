@@ -76,7 +76,25 @@ function handleFile(e) {
 
         const jsonData = XLSX.utils.sheet_to_json(firstSheet);
 
-        originalData = jsonData;
+        originalData = jsonData.map(row => {
+
+            const fixedRow = { ...row };
+
+            if (fixedRow.Date !== undefined) {
+
+                fixedRow.Date = String(fixedRow.Date).padStart(6, "0");
+
+            }
+
+            if (fixedRow.date !== undefined) {
+
+                fixedRow.date = String(fixedRow.date).padStart(6, "0");
+
+            }
+
+            return fixedRow;
+
+        });
 
         populateFilters(originalData);
 
