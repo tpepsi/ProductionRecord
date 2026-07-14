@@ -176,7 +176,7 @@ function clearFilters(){
 
 }
 
-function exportExcel(){
+function exportOutputExcel(){
 
   const excelData =
     getFilteredRecords().map(record => {

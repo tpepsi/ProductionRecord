@@ -1015,7 +1015,7 @@ button:hover {
 
 .print-btn {
 
-  background: #4e33c5;
+  background: #2ab0f3;
   justify-self: left;
   display: flex;
   flex-direction: column;
@@ -1043,3 +1043,16 @@ button:hover {
 
 }
 
+
+.export-output-btn{
+
+    background:#42d347;
+    color:white;
+
+}
+
+.export-output-btn:hover{
+
+    background:#72e022;
+
+}
