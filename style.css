@@ -526,6 +526,13 @@ button:hover {
 
 
   }
+  
+  .app-header{
+
+    display:none !important;
+
+  }
+  
 
   body {
 
